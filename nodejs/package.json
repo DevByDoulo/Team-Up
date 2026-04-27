@@ -1,0 +1,12 @@
+{
+  "name": "teamup-chat",
+  "version": "1.0.0",
+  "description": "Messagerie temps réel Team Up",
+  "main": "teamupapp.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "he": "^1.2.0",
+    "socket.io": "^4.6.1",
+    "teamup-chat": "file:"
+  }
+}
