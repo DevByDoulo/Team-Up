@@ -1,8 +1,8 @@
 [
   {"route":"utilisateurs.php","label":"Utilisateurs","icon":"avatar"},
   {"route":"demandes.php","label":"Demandes","icon":"collective"},
-  {"route":"#","label":"Agenda","icon":"calendar"},
+  {"route":"agenda.php","label":"Agenda","icon":"calendar"},
+  {"route":"messages.php","label":"Messages","icon":"chat"},
   {"route":"#","label":"Tâches","icon":"coding"},
-  {"route":"#","label":"Messages","icon":"chat"},
   {"route":"#","label":"Rapports","icon":"analysis"}
 ]

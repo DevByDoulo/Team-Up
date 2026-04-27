@@ -44,9 +44,13 @@ class UserDAO {
         );
 
         $result = $stmt->execute();
+        
+        // Récupérer l'ID de l'utilisateur inséré
+        $inserted_id = $result ? $conn->insert_id : false;
+        
         $stmt->close();
 
-        return $result;
+        return $inserted_id;
     }
 
     /**
@@ -129,6 +133,45 @@ class UserDAO {
                 $row['utilisateur_email'],
                 $row['utilisateur_creation']
             );
+        }
+
+        $stmt->close();
+        return $user;
+    }
+
+    /**
+     * Vérifie les identifiants de connexion d'un utilisateur
+     * @param string $login Login de l'utilisateur
+     * @param string $password Mot de passe en clair à vérifier
+     * @return UserEntity|null Objet UserEntity si authentification réussie, null sinon
+     */
+    public function authenticateUser($login, $password) {
+        $conn = get_db_connection();
+
+        if ($conn->connect_error) {
+            return null;
+        }
+
+        $stmt = $conn->prepare("SELECT id_utilisateur, utilisateur_nom, utilisateur_login, utilisateur_pwd, utilisateur_email, utilisateur_creation FROM utilisateur WHERE utilisateur_login = ?");
+        $stmt->bind_param("s", $login);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $user = null;
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            
+            // Vérification du mot de passe haché
+            if (password_verify($password, $row['utilisateur_pwd'])) {
+                $user = new UserEntity(
+                    $row['id_utilisateur'],
+                    $row['utilisateur_nom'],
+                    $row['utilisateur_login'],
+                    $row['utilisateur_pwd'],
+                    $row['utilisateur_email'],
+                    $row['utilisateur_creation']
+                );
+            }
         }
 
         $stmt->close();

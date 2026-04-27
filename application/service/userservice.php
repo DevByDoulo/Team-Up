@@ -19,9 +19,9 @@ class UserService {
     }
 
     /**
-     * Ajoute un nouvel utilisateur via le DAO
+     * Ajoute un nouvel utilisateur
      * @param UserEntity $user Objet utilisateur à ajouter
-     * @return bool True si l'ajout réussit, False sinon
+     * @return int|false ID de l'utilisateur inséré ou False en cas d'erreur
      */
     public function adduser(UserEntity $user) {
         return $this->userDAO->adduser($user);
@@ -43,6 +43,16 @@ class UserService {
      */
     public function getuserbyid($id) {
         return $this->userDAO->getuserbyid($id);
+    }
+
+    /**
+     * Authentifie un utilisateur avec son login et mot de passe
+     * @param string $login Login de l'utilisateur
+     * @param string $password Mot de passe de l'utilisateur
+     * @return UserEntity|null Objet UserEntity si authentification réussie, null sinon
+     */
+    public function authenticateUser($login, $password) {
+        return $this->userDAO->authenticateUser($login, $password);
     }
 }
 ?>

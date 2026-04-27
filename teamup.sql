@@ -53,3 +53,21 @@ CREATE TABLE IF NOT EXISTS demande (
   FOREIGN KEY (id_type_demande) REFERENCES type_demande(id_type_demande) ON DELETE SET NULL,
   FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id_utilisateur) ON DELETE SET NULL
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS evenement (
+  id_evenement INT NOT NULL AUTO_INCREMENT,
+  evenement_subject VARCHAR(200) NOT NULL,
+  evenement_description TEXT,
+  evenement_location VARCHAR(200),
+  evenement_dtstart DATETIME NOT NULL,
+  evenement_dtend DATETIME NOT NULL,
+  evenement_tstamp DATETIME,
+  evenement_uid VARCHAR(200),
+  id_utilisateur INT NOT NULL,
+  PRIMARY KEY (id_evenement)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS participant (
+  id_evenement INT NOT NULL,
+  id_utilisateur INT NOT NULL
+) ENGINE=InnoDB;

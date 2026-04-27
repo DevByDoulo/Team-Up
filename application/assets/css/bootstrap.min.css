@@ -1,0 +1,6 @@
+/*!
+ * Bootstrap v4.5.2 (https://getbootstrap.com/)
+ * Fichier local - En production, téléchargez la version complète depuis https://getbootstrap.com/docs/4.5/getting-started/download/
+ */
+/* Pour le développement, ce fichier utilise CDN comme fallback */
+@import url('https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css');

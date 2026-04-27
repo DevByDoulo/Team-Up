@@ -1,37 +1,27 @@
 <?php
 /**
- * Page de liste des demandes
+ * Page Agenda - Liste des événements
  */
 
-require_once 'config.php';
-require_once 'service/demandeservice.php';
-require_once 'service/userservice.php';
-require_once 'service/typedemandeservice.php';
+require_once __DIR__ . '/service/evenementservice.php';
+require_once __DIR__ . '/service/userservice.php';
 
-// Initialisation des services
-$demandeService = new DemandeService();
+// Charger tous les événements via EvenementService::evenement_get_all()
+$evenementService = new EvenementService();
+$evenements = $evenementService->evenement_get_all();
+
+// Charger le service utilisateur pour afficher les noms des organisateurs
 $userService = new UserService();
-$typeDemandeService = new TypeDemandeService();
-
-// Récupération des données
-$demandes = $demandeService->getlistdemandes();
-$types = $typeDemandeService->gettypedemandelist();
-
-// Créer un tableau associatif pour les types (id => label)
-$typesAssoc = array();
-foreach ($types as $type) {
-    $typesAssoc[$type->id_type_demande] = $type->type_demande_label;
-}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Up - Demandes</title>
+    <title>Team Up - Agenda</title>
     <!-- Bootstrap 4 via CDN -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Font Awesome -->
+    <!-- Font Awesome pour les icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
         /* Styles modernes pour toute l'application */
@@ -105,18 +95,6 @@ foreach ($types as $type) {
             transform: scale(1.01);
         }
 
-        .badge-type {
-            font-size: 0.85em;
-            padding: 0.5em 0.8em;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        .badge-info {
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-            border: none;
-        }
-
         .btn {
             border-radius: 25px;
             padding: 10px 20px;
@@ -185,43 +163,30 @@ foreach ($types as $type) {
             transform: translateY(-1px);
         }
 
-        h2 {
+        h1, h2 {
             color: #2c3e50;
             font-weight: 700;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .date-fr {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #495057;
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: white;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            margin-right: 10px;
             box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
             transition: all 0.3s ease;
         }
@@ -249,6 +214,26 @@ foreach ($types as $type) {
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
 
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .main-container {
@@ -262,83 +247,68 @@ foreach ($types as $type) {
             }
             
             .user-avatar {
-                width: 35px;
-                height: 35px;
-                font-size: 0.9rem;
-            }
-            
-            .section-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 2rem;
+                width: 30px;
+                height: 30px;
+                font-size: 0.8rem;
             }
         }
     </style>
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <a class="navbar-brand" href="#"><i class="fas fa-tasks"></i> Team Up</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="index.php">Accueil</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="utilisateurs.php">Utilisateurs</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="equipes.php">Équipes</a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="demandes.php">Demandes</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+    <?php include_once __DIR__ . '/phpinclude/navbar.php'; ?>
 
     <div class="main-container fade-in">
         <div class="text-center mb-4">
             <h1 class="display-3 text-warning mb-3 font-weight-bold">
-                <i class="fas fa-clipboard-list mr-3"></i>Gestion des Demandes
+                <i class="fas fa-calendar-alt mr-3"></i>Agenda
             </h1>
             <p class="lead text-info mb-0 font-weight-bold">
-                Consultez et gérez toutes les demandes de la plateforme
+                Consultez et gérez tous les événements de la plateforme
             </p>
         </div>
 
         <div class="card mb-4">
             <div class="card-header">
                 <h2 class="mb-0">
-                    <i class="fas fa-tasks mr-2"></i>
-                    Liste des demandes
+                    <i class="fas fa-calendar-week mr-2"></i>
+                    Événements programmés
                 </h2>
-                <p class="mb-0 mt-2 opacity-75">Consultez, modifiez et suivez l'état des demandes</p>
+                <p class="mb-0 mt-2 opacity-75">Consultez, modifiez et suivez l'agenda des événements</p>
             </div>
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h4 class="mb-1">
                             <i class="fas fa-list mr-2"></i>
-                            Demandes enregistrées
+                            Événements enregistrés
                         </h4>
                         <small class="text-muted">
                             <i class="fas fa-info-circle mr-1"></i>
-                            <?php echo count($demandes); ?> demande(s) au total
+                            <?php echo count($evenements); ?> événement(s) au total
                         </small>
                     </div>
-                    <a href="adddemande.php" class="btn btn-primary btn-lg">
+                    <a href="addevenement.php" class="btn btn-primary btn-lg">
                         <i class="fas fa-plus mr-2"></i> 
-                        Nouvelle demande
+                        Nouveau rendez-vous
                     </a>
                 </div>
             </div>
         </div>
 
-        <?php if (count($demandes) > 0): ?>
+        <?php if (empty($evenements)): ?>
+            <div class="alert alert-info text-center py-5 fade-in">
+                <div class="section-icon mx-auto mb-4" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h4 class="text-muted font-weight-bold">Aucun événement programmé</h4>
+                <p class="text-muted mb-4">Aucun événement n'a été créé pour le moment.</p>
+                <a href="addevenement.php" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus mr-2"></i>
+                    Créer le premier événement
+                </a>
+            </div>
+        <?php else: ?>
             <div class="table-responsive fade-in">
                 <table class="table table-hover">
                     <thead>
@@ -350,16 +320,16 @@ foreach ($types as $type) {
                                 <i class="fas fa-file-alt mr-2"></i>Objet
                             </th>
                             <th scope="col">
-                                <i class="fas fa-tag mr-2"></i>Type
+                                <i class="fas fa-map-marker-alt mr-2"></i>Lieu
                             </th>
                             <th scope="col">
-                                <i class="fas fa-calendar-plus mr-2"></i>Création
+                                <i class="fas fa-play-circle mr-2"></i>Début
                             </th>
                             <th scope="col">
-                                <i class="fas fa-calendar-check mr-2"></i>Échéance
+                                <i class="fas fa-stop-circle mr-2"></i>Fin
                             </th>
                             <th scope="col">
-                                <i class="fas fa-user mr-2"></i>Assigné à
+                                <i class="fas fa-user mr-2"></i>Organisateur
                             </th>
                             <th scope="col" style="width: 120px;">
                                 <i class="fas fa-cogs mr-2"></i>Actions
@@ -367,82 +337,65 @@ foreach ($types as $type) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($demandes as $demande): 
-                            $typeLabel = isset($typesAssoc[$demande->id_type_demande]) ? $typesAssoc[$demande->id_type_demande] : 'Inconnu';
-                        ?>
+                        <?php foreach ($evenements as $evt): ?>
+                            <?php
+                            // Formater les dates en français : d/m/Y H:i
+                            $date_debut = DateTime::createFromFormat('Y-m-d H:i:s', $evt->evenement_dtstart);
+                            $date_fin = DateTime::createFromFormat('Y-m-d H:i:s', $evt->evenement_dtend);
+                            $debut_fr = $date_debut ? $date_debut->format('d/m/Y H:i') : $evt->evenement_dtstart;
+                            $fin_fr = $date_fin ? $date_fin->format('d/m/Y H:i') : $evt->evenement_dtend;
+                            ?>
                             <tr>
                                 <td class="align-middle">
                                     <div class="d-flex align-items-center">
                                         <div class="user-avatar mr-2">
-                                            <?php echo $demande->id_demande; ?>
+                                            <?php echo $evt->id_evenement; ?>
                                         </div>
-                                        <strong class="text-primary">#<?php echo $demande->id_demande; ?></strong>
+                                        <strong class="text-primary">#<?php echo $evt->id_evenement; ?></strong>
                                     </div>
                                 </td>
                                 <td class="align-middle">
                                     <div class="d-flex align-items-center">
                                         <div>
-                                            <strong class="text-primary"><?php echo htmlspecialchars($demande->demande_objet); ?></strong>
-                                            <?php if (!empty($demande->demande_texte)): ?>
-                                                <br>
-                                                <small class="text-muted">
-                                                    <i class="fas fa-align-left mr-1"></i>
-                                                    <?php echo nl2br(htmlspecialchars(substr($demande->demande_texte, 0, 80))) . (strlen($demande->demande_texte) > 80 ? '...' : ''); ?>
-                                                </small>
-                                            <?php endif; ?>
+                                            <strong class="text-primary"><?php echo htmlspecialchars($evt->evenement_subject); ?></strong>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="align-middle">
-                                    <span class="badge badge-info badge-type">
-                                        <i class="fas fa-tag mr-1"></i>
-                                        <?php echo htmlspecialchars($typeLabel); ?>
-                                    </span>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-map-marker-alt text-muted mr-2"></i>
+                                        <span>
+                                            <?php echo htmlspecialchars($evt->evenement_location ?: 'Non spécifié'); ?>
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="align-middle">
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-clock text-muted mr-2"></i>
                                         <div>
-                                            <strong><?php 
-                                            $dateCreation = new DateTime($demande->demande_date_creation);
-                                            echo $dateCreation->format('d/m/Y'); 
-                                            ?></strong>
-                                            <br>
-                                            <small class="text-muted"><?php echo $dateCreation->format('H:i'); ?></small>
+                                            <strong class="date-fr"><?php echo $debut_fr; ?></strong>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="align-middle">
                                     <div class="d-flex align-items-center">
-                                        <i class="fas fa-calendar-alt text-muted mr-2"></i>
+                                        <i class="fas fa-clock text-muted mr-2"></i>
                                         <div>
-                                            <?php 
-                                            if (!empty($demande->demande_date_echeance)) {
-                                                $dateEcheance = new DateTime($demande->demande_date_echeance);
-                                                echo '<strong>' . $dateEcheance->format('d/m/Y') . '</strong>';
-                                            } else {
-                                                echo '<span class="text-muted">Non définie</span>';
-                                            }
-                                            ?>
+                                            <strong class="date-fr"><?php echo $fin_fr; ?></strong>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="align-middle">
                                     <div class="d-flex align-items-center">
-                                        <?php 
-                                        if (!empty($demande->id_utilisateur)) {
-                                            echo '<div class="user-avatar mr-2">' . strtoupper(substr($demande->utilisateur_nom, 0, 1)) . '</div>';
-                                            echo '<strong>' . htmlspecialchars($demande->utilisateur_nom ?: 'Inconnu') . '</strong>';
-                                        } else {
-                                            echo '<i class="fas fa-user-slash text-muted mr-2"></i>';
-                                            echo '<span class="text-muted">Non assignée</span>';
-                                        }
-                                        ?>
+                                        <div class="user-avatar mr-2">
+                                            <?php echo strtoupper(substr($evt->utilisateur_nom, 0, 1)); ?>
+                                        </div>
+                                        <strong><?php echo htmlspecialchars($evt->utilisateur_nom); ?></strong>
                                     </div>
                                 </td>
                                 <td class="align-middle">
-                                    <a href="editdemande.php?id=<?php echo $demande->id_demande; ?>" 
-                                       class="btn btn-outline-primary btn-sm" title="Modifier la demande">
+                                    <a href="editevenement.php?id=<?php echo $evt->id_evenement; ?>" 
+                                       class="btn btn-outline-primary btn-sm" title="Modifier l'événement">
                                         <i class="fas fa-edit mr-1"></i>
                                         Modifier
                                     </a>
@@ -452,34 +405,23 @@ foreach ($types as $type) {
                     </tbody>
                 </table>
             </div>
-        <?php else: ?>
-            <div class="alert alert-info text-center py-5 fade-in">
-                <div class="section-icon mx-auto mb-4" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
-                    <i class="fas fa-clipboard-list"></i>
-                </div>
-                <h4 class="text-muted font-weight-bold">Aucune demande trouvée</h4>
-                <p class="text-muted mb-4">Aucune demande n'a été créée pour le moment.</p>
-                <a href="adddemande.php" class="btn btn-primary btn-lg">
-                    <i class="fas fa-plus mr-2"></i>
-                    Créer la première demande
-                </a>
-            </div>
         <?php endif; ?>
 
         <div class="d-flex justify-content-between align-items-center mt-4">
             <div class="alert alert-info mb-0">
                 <i class="fas fa-info-circle mr-2"></i>
-                <strong>Total :</strong> <?php echo count($demandes); ?> demande(s) enregistrée(s)
+                <strong>Total :</strong> <?php echo count($evenements); ?> événement(s) programmé(s)
             </div>
-            <a href="adddemande.php" class="btn btn-outline-primary btn-lg">
+            <a href="addevenement.php" class="btn btn-outline-primary btn-lg">
                 <i class="fas fa-plus mr-2"></i> 
-                Ajouter une demande
+                Ajouter un événement
             </a>
         </div>
     </div>
 
-    <!-- jQuery et Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Scripts Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

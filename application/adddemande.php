@@ -110,21 +110,177 @@ function validateDate($date, $format = 'Y-m-d') {
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
+        /* Styles modernes pour toute l'application */
         body {
             padding-top: 56px;
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .form-container {
-            max-width: 800px;
-            margin: 30px auto;
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            margin: 20px auto;
+            max-width: 900px;
+            animation: fadeInUp 0.6s ease-out;
             padding: 30px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
         .required:after {
             content: " *";
             color: #dc3545;
+            font-weight: bold;
+        }
+
+        .btn {
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.4);
+        }
+
+        .alert {
+            border: none;
+            border-radius: 10px;
+            padding: 15px 20px;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #343a40 0%, #23272b 100%) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #007bff !important;
+            transform: translateY(-1px);
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 10px;
+                padding: 20px;
+                border-radius: 15px;
+            }
+            
+            .card {
+                border-radius: 10px;
+            }
         }
     </style>
 </head>
@@ -153,90 +309,132 @@ function validateDate($date, $format = 'Y-m-d') {
         </div>
     </nav>
 
-    <div class="container">
-        <div class="form-container">
-            <h2 class="text-center mb-4"><i class="fas fa-plus-circle"></i> Nouvelle demande</h2>
-            
-            <?php if (!empty($message)): ?>
-                <div class="alert alert-<?php echo $message_type; ?> alert-dismissible fade show" role="alert">
-                    <?php echo $message; ?>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            <?php endif; ?>
+    <div class="main-container fade-in">
+        <div class="text-center mb-4">
+            <h1 class="display-3 text-warning mb-3 font-weight-bold">
+                <i class="fas fa-plus-circle mr-3"></i>Nouvelle Demande
+            </h1>
+            <p class="lead text-info mb-0 font-weight-bold">
+                Créez une nouvelle demande pour la plateforme
+            </p>
+        </div>
 
-            <form method="POST" action="">
-                <div class="form-group">
-                    <label for="demande_objet" class="required">Objet de la demande</label>
-                    <input type="text" class="form-control" id="demande_objet" name="demande_objet" 
-                           placeholder="Entrez l'objet de la demande" required
-                           value="<?php echo isset($_POST['demande_objet']) ? htmlspecialchars($_POST['demande_objet']) : ''; ?>">
-                </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">
+                    <i class="fas fa-clipboard-list mr-2"></i>
+                    Formulaire de demande
+                </h2>
+                <p class="mb-0 mt-2 opacity-75">Remplissez les informations ci-dessous pour créer une nouvelle demande</p>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($message)): ?>
+                    <div class="alert alert-<?php echo $message_type; ?> alert-dismissible fade show fade-in" role="alert">
+                        <i class="fas fa-<?php echo $message_type === 'success' ? 'check-circle' : 'exclamation-circle'; ?> mr-2"></i>
+                        <strong><?php echo $message_type === 'success' ? 'Succès !' : 'Erreur !'; ?></strong> <?php echo $message; ?>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                <?php endif; ?>
 
-                <div class="form-group">
-                    <label for="demande_texte">Description</label>
-                    <textarea class="form-control" id="demande_texte" name="demande_texte" 
-                              rows="4" placeholder="Détaillez votre demande..."><?php echo isset($_POST['demande_texte']) ? htmlspecialchars($_POST['demande_texte']) : ''; ?></textarea>
-                </div>
+                <form method="POST" action="">
+                    <div class="form-group">
+                        <label for="demande_objet" class="form-label required">
+                            <i class="fas fa-file-alt mr-2"></i>
+                            Objet de la demande
+                        </label>
+                        <input type="text" class="form-control" id="demande_objet" name="demande_objet" 
+                               placeholder="Entrez l'objet de la demande" required
+                               value="<?php echo isset($_POST['demande_objet']) ? htmlspecialchars($_POST['demande_objet']) : ''; ?>">
+                    </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="demande_date_creation" class="required">Date de création</label>
-                            <input type="date" class="form-control" id="demande_date_creation" name="demande_date_creation" 
-                                   value="<?php echo isset($_POST['demande_date_creation']) ? htmlspecialchars($_POST['demande_date_creation']) : date('Y-m-d'); ?>" required>
+                    <div class="form-group">
+                        <label for="demande_texte" class="form-label">
+                            <i class="fas fa-align-left mr-2"></i>
+                            Description
+                        </label>
+                        <textarea class="form-control" id="demande_texte" name="demande_texte" 
+                                  rows="4" placeholder="Détaillez votre demande..."><?php echo isset($_POST['demande_texte']) ? htmlspecialchars($_POST['demande_texte']) : ''; ?></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="demande_date_creation" class="form-label required">
+                                    <i class="fas fa-calendar-plus mr-2"></i>
+                                    Date de création
+                                </label>
+                                <input type="date" class="form-control" id="demande_date_creation" name="demande_date_creation" 
+                                       value="<?php echo isset($_POST['demande_date_creation']) ? htmlspecialchars($_POST['demande_date_creation']) : date('Y-m-d'); ?>" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="demande_date_echeance" class="form-label required">
+                                    <i class="fas fa-calendar-check mr-2"></i>
+                                    Date d'échéance
+                                </label>
+                                <input type="date" class="form-control" id="demande_date_echeance" name="demande_date_echeance" 
+                                       value="<?php echo isset($_POST['demande_date_echeance']) ? htmlspecialchars($_POST['demande_date_echeance']) : ''; ?>" required>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="demande_date_echeance" class="required">Date d'échéance</label>
-                            <input type="date" class="form-control" id="demande_date_echeance" name="demande_date_echeance" 
-                                   value="<?php echo isset($_POST['demande_date_echeance']) ? htmlspecialchars($_POST['demande_date_echeance']) : ''; ?>" required>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="id_type_demande" class="required">Type de demande</label>
-                            <select class="form-control" id="id_type_demande" name="id_type_demande" required>
-                                <option value="">-- Sélectionnez un type --</option>
-                                <?php foreach ($types as $type): ?>
-                                    <option value="<?php echo $type->id_type_demande; ?>"
-                                        <?php echo (isset($_POST['id_type_demande']) && $_POST['id_type_demande'] == $type->id_type_demande) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($type->type_demande_label); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_type_demande" class="form-label required">
+                                    <i class="fas fa-tag mr-2"></i>
+                                    Type de demande
+                                </label>
+                                <select class="form-control" id="id_type_demande" name="id_type_demande" required>
+                                    <option value="">-- Sélectionnez un type --</option>
+                                    <?php foreach ($types as $type): ?>
+                                        <option value="<?php echo $type->id_type_demande; ?>"
+                                            <?php echo (isset($_POST['id_type_demande']) && $_POST['id_type_demande'] == $type->id_type_demande) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($type->type_demande_label); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_utilisateur" class="form-label">
+                                    <i class="fas fa-user mr-2"></i>
+                                    Assignée à
+                                </label>
+                                <select class="form-control" id="id_utilisateur" name="id_utilisateur">
+                                    <option value="">-- Non assignée --</option>
+                                    <?php foreach ($utilisateurs as $user): ?>
+                                        <option value="<?php echo $user->id_utilisateur; ?>"
+                                            <?php echo (isset($_POST['id_utilisateur']) && $_POST['id_utilisateur'] == $user->id_utilisateur) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($user->utilisateur_nom); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="id_utilisateur">Assignée à</label>
-                            <select class="form-control" id="id_utilisateur" name="id_utilisateur">
-                                <option value="">-- Non assignée --</option>
-                                <?php foreach ($utilisateurs as $user): ?>
-                                    <option value="<?php echo $user->id_utilisateur; ?>"
-                                        <?php echo (isset($_POST['id_utilisateur']) && $_POST['id_utilisateur'] == $user->id_utilisateur) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($user->utilisateur_nom); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <a href="demandes.php" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Retour à la liste
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Créer la demande
-                    </button>
-                </div>
-            </form>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Information :</strong> Les champs marqués d'une astérisque (*) sont obligatoires.
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a href="demandes.php" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Retour à la liste
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save mr-2"></i>
+                            Créer la demande
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
