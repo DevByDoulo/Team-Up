@@ -499,7 +499,7 @@ if (empty($utilisateurs)) {
     </div>
 
     <!-- Scripts Bootstrap -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <!-- Socket.io client -->
@@ -510,6 +510,53 @@ if (empty($utilisateurs)) {
         var displayname = '<?php echo addslashes($current_user['name']); ?>';  // Nom de l'utilisateur connecté
         var socket = null;
         var currentAttendee = null;
+        
+        // Fonction pour enregistrer un message dans MongoDB via Fetch API
+        function recordMessageToMongo(attendee, message) {
+            var url = 'controllers/messagerie/index.php?action=recordmessage';
+            var params = {
+                attendee: attendee,
+                message: encodeURIComponent(message)
+            };
+            
+            // Construire l'URL avec les paramètres GET
+            var fullUrl = url + '&' + new URLSearchParams(params);
+            
+            // Appel Fetch API
+            fetch(fullUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Message enregistré dans MongoDB avec succès:', data);
+            })
+            .catch(error => {
+                console.error('Erreur lors de l\'enregistrement du message dans MongoDB:', error);
+            });
+        }
+        
+        // Solution alternative pour le bouton radio
+        $(document).ready(function() {
+            // Ajouter un éclic direct sur les labels car Bootstrap btn-group-toggle peut ne pas fonctionner
+            $('label:has(#chkPrivate)').click(function(e) {
+                e.preventDefault();
+                $('#chkPrivate').prop('checked', true);
+                $('#chkAll').prop('checked', false);
+                $('#privateChatSection').show();
+                $('#id_utilisateur').prop('disabled', false);
+                            });
+
+            $('label:has(#chkAll)').click(function(e) {
+                e.preventDefault();
+                $('#chkAll').prop('checked', true);
+                $('#chkPrivate').prop('checked', false);
+                $('#privateChatSection').hide();
+                $('#id_utilisateur').prop('disabled', true);
+                            });
+        });
 
         // Fonction d'ajout de message dans l'interface
         // sender=1 : fond gris, float left (mes messages)
@@ -661,6 +708,9 @@ if (empty($utilisateurs)) {
                 socket.emit('send-message', message);
                 // Afficher le message envoyé (côté gauche, fond gris)
                 addmessage('Moi', message, 1);
+                
+                // Journaliser dans MongoDB (message public)
+                recordMessageToMongo('', message);
             } else {
                 // Discussion privée
                 var attendee = $('#id_utilisateur').val();
@@ -678,17 +728,69 @@ if (empty($utilisateurs)) {
                 socket.emit('private-message', cleanAttendeeName, message);
                 // Afficher le message envoyé (côté gauche, fond gris)
                 addmessage('Moi', message, 1);
+                
+                // Journaliser dans MongoDB (message privé)
+                recordMessageToMongo(cleanAttendeeName, message);
             }
 
             // Vider le textarea
             $('#message').val('');
         });
 
-        // Touche Entrée dans le textarea (sans Shift)
-        $('#message').keypress(function(e) {
+        // Touche Entrée dans le textarea (sans Shift) - Approche avec JavaScript natif
+        document.getElementById('message').addEventListener('keydown', function(e) {
+            console.log('DEBUG: Touche pressée:', e.which);
             if (e.which === 13 && !e.shiftKey) {
+                console.log('DEBUG: Entrée détectée');
                 e.preventDefault();
-                $('#btnSend').click();
+                e.stopPropagation();
+                
+                var textarea = document.getElementById('message');
+                var message = textarea.value.trim();
+                console.log('DEBUG: Message avant envoi:', message);
+                console.log('DEBUG: Valeur du textarea avant vidage:', textarea.value);
+                
+                if (message !== '') {
+                    // Appeler directement la fonction d'envoi
+                    var isPrivate = document.getElementById('chkPrivate').checked;
+                    
+                    if (!isPrivate) {
+                        // Discussion générale
+                        socket.emit('send-message', message);
+                        addmessage('Moi', message, 1);
+                        recordMessageToMongo('', message);
+                    } else {
+                        // Discussion privée
+                        var attendee = document.getElementById('id_utilisateur').value;
+                        var attendeeSelect = document.getElementById('id_utilisateur');
+                        var attendeeName = attendeeSelect.options[attendeeSelect.selectedIndex].text;
+                        if (attendee) {
+                            socket.emit('get-status', attendeeName);
+                            var cleanAttendeeName = attendeeName.trim();
+                            socket.emit('private-message', cleanAttendeeName, message);
+                            addmessage('Moi', message, 1);
+                            recordMessageToMongo(cleanAttendeeName, message);
+                        }
+                    }
+                    
+                    // Vider le champ avec JavaScript natif
+                    console.log('DEBUG: Tentative de vidage du champ');
+                    textarea.value = '';
+                    textarea.textContent = '';
+                    textarea.innerText = '';
+                    
+                    // Forcer le vidage avec jQuery aussi
+                    $('#message').val('');
+                    
+                    // Vérifier après vidage
+                    setTimeout(function() {
+                        console.log('DEBUG: Valeur après vidage (natif):', textarea.value);
+                        console.log('DEBUG: Valeur après vidage (jQuery):', $('#message').val());
+                        textarea.focus();
+                    }, 50);
+                }
+                
+                return false;
             }
         });
 
